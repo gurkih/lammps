@@ -1,0 +1,105 @@
+#include "string.h"
+#include "stdlib.h"
+#include "math.h"
+#include "fix_deriforce.h"
+#include "atom.h"
+#include "force.h"
+#include "comm.h"
+#include "input.h"
+#include "variable.h"
+#include "group.h"
+#include "update.h"
+#include "modify.h"
+#include "compute.h"
+#include "error.h"
+#include "memory.h"
+
+#include "mpi.h"
+
+using namespace LAMMPS_NS;
+using namespace FixConst;
+
+ForceDerivative::ForceDerivative(LAMMPS *lmp, int narg, char **arg) 
+: Fix(lmp, narg, arg) {
+  if (narg < 4) error->all(FLERR,"Illegal fix print command");
+
+  nevery = atoi(arg[3]);
+  if (nevery <= 0) error->all(FLERR,"Illegal fix print command");
+	memory->create(this->lastf, atom->nmax, 3, "ForceDerivative:lastf");
+	atom->add_callback(0);
+}
+
+ForceDerivative::~ForceDerivative() {
+	memory->destroy(lastf);
+	atom->delete_callback(id,0);
+}
+
+int ForceDerivative::setmask() {
+	int mask = 0;
+	mask |= FixConst::END_OF_STEP;
+	return mask;
+}
+
+void ForceDerivative::end_of_step() {
+	int nlocal = atom->nlocal;
+
+
+	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {
+	
+	double **tmpcopy = atom->f;
+	if (atom->mask[indexOfParticle] & groupbit) {
+	//	printf("Hello World");
+		if (this->lastf != 0) {
+			double output[3];
+			//printf(" %d \n,",nlocal);
+			for(int i = 0; i < 3; i++) {
+				output[i] = lastf[indexOfParticle][i]-tmpcopy[indexOfParticle][i];
+				if (output[i] != output[i]) { //this checks for nan and overwrites with 0 if nan
+//					printf("%f, %f, strangevalues \n", lastf[indexOfParticle][i], tmpcopy[indexOfParticle][i]);
+					output[i] = tmpcopy[indexOfParticle][i]; 
+					//this might be nonsense; TODO: check for plausibility
+				}
+			}	
+			printf("%f, %f, %f; \n",output[0], output[1], output[2]);
+			double mysize = sizeof(this->lastf);
+			int tmpsize = sizeof(tmpcopy);
+			printf("arraygroesse: %f, nlocal: %d, tmpsize: %d \n",mysize,nlocal,tmpsize);
+		}
+	  }
+}
+
+	double **tmpcopy = atom->f;
+	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) 
+	{
+		for (int i = 0; i < 3; i++) {
+			this->lastf[indexOfParticle][i] = tmpcopy[indexOfParticle] [i];
+		}
+	}
+}
+
+double ForceDerivative::memory_usage() {
+	int nmax = atom->nmax;
+	double bytes = 0.0;
+	if (this->lastf !=0) {
+		bytes +=nmax * 3 *sizeof(double);
+	}
+	return bytes;	
+}
+
+void ForceDerivative::grow_arrays(int nmax) {
+	if (this->lastf != 0) {
+		memory->grow(this->lastf, nmax, 3, "ForceDerivative:lastf");
+	}
+}
+
+void ForceDerivative::copy_arrays(int i, int j) {
+	if (this->lastf != 0) {
+		memcpy(this->lastf[j], this->lastf[i],sizeof(double)*3);
+	}
+}
+
+void ForceDerivative::set_arrays(int i) {
+	if (this->lastf != 0) {
+		memset(this->lastf[i], 0, sizeof(double) * 3);
+	}
+}

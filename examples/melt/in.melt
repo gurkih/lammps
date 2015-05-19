@@ -11,6 +11,8 @@ mass		1 1.0
 
 velocity	all create 3.0 87287
 
+
+#pair_style	lj/cut/omp 2.5
 pair_style	lj/cut 2.5
 pair_coeff	1 1 1.0 1.0 2.5
 
@@ -18,16 +20,35 @@ neighbor	0.3 bin
 neigh_modify	every 20 delay 0 check no
 
 fix		1 all nve
+#fix 2 all nvt temp 300.0 300.0 100.0
+#fix 1 all temp/grav 300.0 300.0 100.0
+#fix 3 all nve
 
+fix 4 all force/deri 1 
+
+compute 1 all pe
+#compute molPE all pe bond angle dihedral improper 
+#compute 1 all property/atom fx fy fz
+#compute 4 all pe/atom
+
+#compute		peratom all pe/atom
+#compute		pe all reduce sum c_peratom
+#thermo_style	custom step temp etotal press pe c_p
+
+
+#fix 1 all temp/berendsen 300.0 300.0 100.0
+#fix 2 all nve #upgrades the new velocities calculated by berendsen 
 #dump		id all atom 50 dump.melt
 
 #dump		2 all image 25 image.*.jpg type type &
 #		axes yes 0.8 0.02 view 60 -30
 #dump_modify	2 pad 3
-
+dump 1 all xyz 1 gravsmall.xyz
+#dump 2 all custom 5 dump.myforce.* fx
 #dump		3 all movie 25 movie.mpg type type &
 #		axes yes 0.8 0.02 view 60 -30
 #dump_modify	3 pad 3
 
-thermo		50
-run		250
+thermo		100	
+run		100000
+
