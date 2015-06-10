@@ -41,124 +41,98 @@ int ForceDerivative::setmask() {
 	return mask;
 }
 
+void ForceDerivative::sort(int myindex) {
+
+	if (distancesofclosestatoms [myindex][2] < distancesofclosestatoms[myindex][0]) {
+
+		int itmp = indicesofclosestatoms[myindex][2];
+		double dtmp = distancesofclosestatoms[myindex][2];
+
+		indicesofclosestatoms[myindex][2] = indicesofclosestatoms[myindex][1];
+		distancesofclosestatoms[myindex][2]= indicesofclosestatoms [myindex][1];
+		
+		indicesofclosestatoms[myindex][1] = indicesofclosestatoms[myindex][0];
+		distancesofclosestatoms[myindex][1]= indicesofclosestatoms [myindex][0];
+
+		indicesofclosestatoms[myindex][0] = itmp;
+		distancesofclosestatoms[myindex][0]= dtmp;
+	}
+	
+	else if (distancesofclosestatoms [myindex][2] < distancesofclosestatoms[myindex][1]) {
+		
+		int itmp = indicesofclosestatoms[myindex][2];
+		double dtmp = distancesofclosestatoms[myindex][2];
+
+		indicesofclosestatoms[myindex][2] = indicesofclosestatoms[myindex][1];
+		distancesofclosestatoms[myindex][2]= indicesofclosestatoms [myindex][1];
+
+		indicesofclosestatoms[myindex][1] = itmp;
+		distancesofclosestatoms[myindex][1]= dtmp;
+
+	}
+}
+
+double ForceDerivative::euclideandistance(int firstatom, int secondatom) {
+				double xdistance = pow((poscopy[firstatom][0]-poscopy[secondatom][0]),2);
+				double ydistance = pow((poscopy[firstatom][1]-poscopy[secondatom][1]),2);
+				double zdistance = pow((poscopy[firstatom][2]-poscopy[secondatom][2]),2);
+				double mydistance = sqrt(xdistance+ydistance+zdistance);
+}
+
 void ForceDerivative::end_of_step() {
 	int nlocal = atom->nlocal;
 	double deriforceoutput[nlocal][3];
 	double forceoutput[nlocal][3];
 	double speedoutput[nlocal][3];
-
+	int indicesofclosestatoms [nlocal][3];
+	double distancesofclosestatoms [nlocal][3];
 	float averagedenominator[3] = {0,0,0};
 
 	float averagederif[3] = {0,0,0};
-	printf("i am being run!");
+//	printf("i am being run!");
 
 
 	//here: calculate the DeriForce for each atom. Note that this will just calculate the DeriForce for the atoms this thread owns (like stated in atom->mask)
-
+//	printf("; \n");
 	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {	
-
+	double **poscopy = atom->x;
 	double **forcecopy = atom->f;
 	double **speedcopy = atom->v;
 	int** specialcopy = atom->bond_type;
-	printf("i managed to copy!\n");
+	bool ifoundsomething = false;
+//	printf("i managed to copy!\n");
 //	printf("my bond type is: %d \n",atom->bond_type[2][2]);
+
 		if (atom->mask[indexOfParticle] & groupbit) {
 		//	printf("Hello World");
-			if (this->lastf != 0) {
-				//printf("nspecial = %d \n",specialcopy[0][0]);
-				
-				//printf(" %d \n,",nlocal);
-				for(int i = 0; i < 3; i++) {
-
-					// Note: forceoutput and speedoutput are not needed for the deriforce computations. They are still being calculated here in order to save a for-loop
-					forceoutput[indexOfParticle][i] = forcecopy[indexOfParticle][i]; //this calcs the f for each atom
-					speedoutput[indexOfParticle][i] = speedcopy[indexOfParticle][i]; //this calcs the v for each atom
-
-					deriforceoutput[indexOfParticle][i] = lastf[indexOfParticle][i]-forcecopy[indexOfParticle][i]; //this calcs the derivative force
-					if (deriforceoutput[indexOfParticle][i] != deriforceoutput[indexOfParticle][i]) { //this checks for nan and overwrites with 0 if nan
-						deriforceoutput[indexOfParticle][i] = 0; 
-						//this might be nonsense; TODO: check for plausibility
-					} else {
-						deriforceoutput[indexOfParticle][i] = deriforceoutput[indexOfParticle][i]*deriforceoutput[indexOfParticle][i];
-					}
-				}	
-			} 
-		}
-	}
-	
-	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {	
-		if (atom->mask[indexOfParticle] & groupbit) {
-			//printf("%f is gonna be added \n", averagederif[0]); //deriforceoutput[indexOfParticle][0]);	
 			
-
-	//now: calculate -F_i / v_i
-		for(int i = 0; i < 3; i++) {
-			if(speedoutput[indexOfParticle][i] != 0) {
-				averagedenominator[i] += -forceoutput[indexOfParticle][i] / speedoutput[indexOfParticle][i];
+			for (int i = 0; i < 3; i++) {
+				indicesofclosestatoms [indexOfParticle][i] = i;
+				if (indexOfParticle <=2) {
+					indicesofclosestatoms [indexOfParticle][i]+=3;
+				}
+				distancesofclosestatoms[indexOfParticle][i] = euclideandistance(indexOfParticle,i);
 			}
-		
-	//now: calculate the average DeriForce over threads atoms. Note that - again - we have to just use our threads atoms - so compare with atom->mask
-			averagederif[i] = averagederif[i] + (float)deriforceoutput[indexOfParticle][i];	
-			//printf("%f is gonna be added \n", averagederif[0]);	
+			sort(indexOfParticle);
+			
+			for (int i = 0; i < nlocal; i++) {
+				ifoundsomething = false;
+				if (i == indexOfParticle) {
+					break;
+				}
 
-			//averagederif[i] /= (float)nlocal;
-			//averagedenominator[i] /= (float)nlocal;
+				double mydistance = euclideandistance(indexOfParticle, i);
 
-			printf("averagederif is %f , averagedenominator = %f ",averagederif[i], averagedenominator[i]);
-		}
-		printf("\n");
-		}
-	}
-
-	for (int i = 0; i < 3; i++) {
-		averagederif[i] /= (float)nlocal;
-		averagedenominator[i] /= (float)nlocal;
-	}
-
-
-	float globalderif[3];
-	float globaldenominator[3];
-	// mpi stuff is taken from http://mpitutorial.com/tutorials/mpi-reduce-and-allreduce/	
-	//int num_elements_per_proc = atoi(argv[1]);
-	int num_elements_per_proc = 1;
-	
-	int world_rank;
-	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-	int world_size;
-	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-	MPI_Reduce(&averagederif[0], &globalderif[0], 3, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Reduce(&averagedenominator[0], &globaldenominator[0], 3, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
-	
-	for (int i = 0; i < 3; i++) {
-
-		globalderif[i] /= (world_size * num_elements_per_proc);
-		globaldenominator[i] /= (world_size * num_elements_per_proc);
-
-	}
-	//printf("worldsize: %d \n",world_size);
-
-	if(world_rank == 0)
-	{
-	float sumderif = 0;
-	float sumdenom = 0;
-	for (int i = 0; i < 3; i++) {
-		sumderif += globalderif[i];
-		sumdenom += globaldenominator[i];
-	}
-	float result = sumderif/(sumdenom*3);
-	printf("Temperature: %f \n", result);
-	
-	//	printf("x_f_deriv = %f, y_f_deriv = %f, z_f_deriv = %f, globaldenom = %f,  nlocal = %d, worldsize = %d \n", globalderif[0], globalderif[1], globalderif[2], globaldenominator[0], nlocal, world_size);
-	}
-
-	//MPI_Reduce TODO
-
-	double **forcecopy = atom->f;
-	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) 
-	{
-		for (int i = 0; i < 3; i++) {
-			this->lastf[indexOfParticle][i] = forcecopy[indexOfParticle] [i];
+				if (mydistance < distancesofclosestatoms[indexOfParticle][2]) {
+					indicesofclosestatoms[indexOfParticle][2] = i;
+					distancesofclosestatoms[indexOfParticle][2] = mydistance;
+					ifoundsomething = true;
+				}
+				if (ifoundsomething) {
+					sort(indexOfParticle);
+				}
+			}
+//			printf("%d, %d, %d; \n",poscopy[indexOfParticle][0],poscopy[indexOfParticle][1],poscopy[indexOfParticle][2]);
 		}
 	}
 }
