@@ -59,10 +59,14 @@ void ForceDerivative::end_of_step() {
 
 	double **forcecopy = atom->f;
 	double **speedcopy = atom->v;
+	int** specialcopy = atom->bond_type;
+	printf("i managed to copy!\n");
+//	printf("my bond type is: %d \n",atom->bond_type[2][2]);
 		if (atom->mask[indexOfParticle] & groupbit) {
 		//	printf("Hello World");
 			if (this->lastf != 0) {
-
+				//printf("nspecial = %d \n",specialcopy[0][0]);
+				
 				//printf(" %d \n,",nlocal);
 				for(int i = 0; i < 3; i++) {
 
