@@ -73,7 +73,10 @@ void ForceDerivative::sort(int myindex) {
 }
 
 double ForceDerivative::euclideandistance(int firstatom, int secondatom) {
+				printf("%d", poscopy[1][1]);
+				printf("i distance %d and %d \n",firstatom, secondatom);
 				double xdistance = pow((poscopy[firstatom][0]-poscopy[secondatom][0]),2);
+				printf("didx \n");
 				double ydistance = pow((poscopy[firstatom][1]-poscopy[secondatom][1]),2);
 				double zdistance = pow((poscopy[firstatom][2]-poscopy[secondatom][2]),2);
 				double mydistance = sqrt(xdistance+ydistance+zdistance);
@@ -92,7 +95,6 @@ void ForceDerivative::end_of_step() {
 //	printf("i am being run!");
 
 
-	//here: calculate the DeriForce for each atom. Note that this will just calculate the DeriForce for the atoms this thread owns (like stated in atom->mask)
 //	printf("; \n");
 	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {	
 	double **poscopy = atom->x;
@@ -111,10 +113,14 @@ void ForceDerivative::end_of_step() {
 				if (indexOfParticle <=2) {
 					indicesofclosestatoms [indexOfParticle][i]+=3;
 				}
-				distancesofclosestatoms[indexOfParticle][i] = euclideandistance(indexOfParticle,i);
+				
+				printf("i managed to init! \n");			
+				distancesofclosestatoms[indexOfParticle][i] = euclideandistance(indexOfParticle,indicesofclosestatoms [indexOfParticle][i]);
 			}
-			sort(indexOfParticle);
 			
+
+			sort(indexOfParticle);
+
 			for (int i = 0; i < nlocal; i++) {
 				ifoundsomething = false;
 				if (i == indexOfParticle) {
