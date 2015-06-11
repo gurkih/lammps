@@ -16,7 +16,7 @@ class ForceDerivative : public Fix {
 		int setmask();
 		void end_of_step();
 		void sort(int);
-		double euclideandistance(int, int);
+		double euclideandistance(double *, double *);
 		double memory_usage();
 		void grow_arrays(int);
 		void copy_arrays(int, int);

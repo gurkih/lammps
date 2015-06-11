@@ -74,28 +74,24 @@ void ForceDerivative::sort(int myindex) {
 	printf("finished sorting! \n");
 }
 
-double ForceDerivative::euclideandistance(int firstatom, int secondatom) {
-				if (firstatom == secondatom) {
-//					return DBL_MAX;
-				}
+double ForceDerivative::euclideandistance(double* firstatoms, double* secondatoms) {
 				printf("measuring ... \n");
-				double first[3];
-				double second[3];
-				for (int i = 0; i < 3; i++) {
-					first[i] = poscopy[firstatom][i];
-					second[i] = poscopy[secondatom][i];
+				if (firstatoms[0] == secondatoms[0] && firstatoms[1] == secondatoms[1] && firstatoms[2] == secondatoms[2]) {
+					printf("done measuring! \n");
+					return DBL_MAX; //return inf if we got handed over the same atom twice
 				}
 				//printf("%f", tmp[0]);
-				printf("i distance %d and %d \n",firstatom, secondatom);
 				/*
 				double xdistance = pow((poscopy[firstatom][0]-poscopy[secondatom][0]),2);
 				double ydistance = pow((poscopy[firstatom][1]-poscopy[secondatom][1]),2);
 				double zdistance = pow((poscopy[firstatom][2]-poscopy[secondatom][2]),2);
 				*/
-				double xdistance = pow(first[0]-second[0],2);
-				double ydistance = pow(first[1]-second[1],2);
-				double zdistance = pow(first[2]-second[2],2);
+				double xdistance = pow(firstatoms[0]-secondatoms[0],2);
+				double ydistance = pow(firstatoms[1]-secondatoms[1],2);
+				double zdistance = pow(firstatoms[2]-secondatoms[2],2);
 				double mydistance = sqrt(xdistance+ydistance+zdistance);
+				printf("done measuring! \n");
+				return mydistance;
 }
 
 void ForceDerivative::end_of_step() {
@@ -103,7 +99,7 @@ void ForceDerivative::end_of_step() {
 	double deriforceoutput[nlocal][3];
 	double forceoutput[nlocal][3];
 	double speedoutput[nlocal][3];
-	int indicesofclosestatoms [nlocal][3]; 
+	int indicesofclosestatoms [nlocal][3]; // just looking for the three closest atoms right now. this might change.
 	double distancesofclosestatoms [nlocal][3];
 	float averagedenominator[3] = {0,0,0};
 
@@ -112,9 +108,15 @@ void ForceDerivative::end_of_step() {
 
 
 //	printf("; \n");
-	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {	
+	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {
+	
 	double **poscopy = atom->x;
-	printf("poscypo 0_0 = %f \n",poscopy[0][0]);
+	for(int i = 0; i < 10; i++) {
+		for (int j = 0; j < 3; j++) {
+			printf("poscopy %d/%d = %f ",i, j, poscopy[i][j]);
+		}
+		printf("\n");
+	}
 	double **forcecopy = atom->f;
 	double **speedcopy = atom->v;
 	int** specialcopy = atom->bond_type;
@@ -130,11 +132,21 @@ void ForceDerivative::end_of_step() {
 				if (indexOfParticle <=2) {
 //					indicesofclosestatoms [indexOfParticle][i]+=3;
 				}	
-				printf("i managed to init! \n");			
-				distancesofclosestatoms[indexOfParticle][i] = euclideandistance(indexOfParticle,indicesofclosestatoms [indexOfParticle][i]);
+				printf("i managed to init! \n");
+
+// we have to create local copys to avoid some scope trouble.
+
+				double first [3];
+				double second [3];
+				for (int x = 0; x < 3; x++) {
+					first[x] = poscopy[indexOfParticle][x];
+					second[x] = poscopy[indicesofclosestatoms[indexOfParticle][i]][x];
+				}
+				//distancesofclosestatoms[indexOfParticle][i] = euclideandistance(indexOfParticle,indicesofclosestatoms [indexOfParticle][i]);i
+				distancesofclosestatoms[indexOfParticle][i] = euclideandistance(first, second);
+				
 			}
 			
-
 			sort(indexOfParticle);
 
 			for (int i = 0; i < nlocal; i++) {
@@ -143,7 +155,16 @@ void ForceDerivative::end_of_step() {
 					break;
 				}
 
-				double mydistance = euclideandistance(indexOfParticle, i);
+// we have to create local copys to avoid some scope trouble.
+
+				double first [3];
+				double second [3];
+				for (int x = 0; x < 3; x++) {
+					first[x] = poscopy[indexOfParticle][x];
+					second[x] = poscopy[i][x];
+				}
+
+				double mydistance = euclideandistance(first, second);
 
 				if (mydistance < distancesofclosestatoms[indexOfParticle][2]) {
 					indicesofclosestatoms[indexOfParticle][2] = i;
