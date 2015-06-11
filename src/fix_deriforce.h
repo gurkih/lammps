@@ -26,6 +26,7 @@ class ForceDerivative : public Fix {
 		double **poscopy;
 		double **distancesofclosestatoms;
 		double **indicesofclosestatoms;
+
 };
 
 }

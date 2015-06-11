@@ -43,6 +43,7 @@ int ForceDerivative::setmask() {
 }
 
 void ForceDerivative::sort(int myindex) {
+	//this doesnt work as sort is unable to access indicesofblah
 	printf("sorting ... \n");
 	if (distancesofclosestatoms [myindex][2] < distancesofclosestatoms[myindex][0]) {
 
@@ -50,10 +51,10 @@ void ForceDerivative::sort(int myindex) {
 		double dtmp = distancesofclosestatoms[myindex][2];
 
 		indicesofclosestatoms[myindex][2] = indicesofclosestatoms[myindex][1];
-		distancesofclosestatoms[myindex][2]= indicesofclosestatoms [myindex][1];
+		distancesofclosestatoms[myindex][2]= distancesofclosestatoms[myindex][1];
 		
 		indicesofclosestatoms[myindex][1] = indicesofclosestatoms[myindex][0];
-		distancesofclosestatoms[myindex][1]= indicesofclosestatoms [myindex][0];
+		distancesofclosestatoms[myindex][1]=  distancesofclosestatoms[myindex][0];
 
 		indicesofclosestatoms[myindex][0] = itmp;
 		distancesofclosestatoms[myindex][0]= dtmp;
@@ -74,9 +75,9 @@ void ForceDerivative::sort(int myindex) {
 	printf("finished sorting! \n");
 }
 
-double ForceDerivative::euclideandistance(double* firstatoms, double* secondatoms) {
+double ForceDerivative::euclideandistance(double* firstatom, double* secondatom) {
 				printf("measuring ... \n");
-				if (firstatoms[0] == secondatoms[0] && firstatoms[1] == secondatoms[1] && firstatoms[2] == secondatoms[2]) {
+				if (firstatom[0] == secondatom[0] && firstatom[1] == secondatom[1] && firstatom[2] == secondatom[2]) {
 					printf("done measuring! \n");
 					return DBL_MAX; //return inf if we got handed over the same atom twice
 				}
@@ -86,9 +87,9 @@ double ForceDerivative::euclideandistance(double* firstatoms, double* secondatom
 				double ydistance = pow((poscopy[firstatom][1]-poscopy[secondatom][1]),2);
 				double zdistance = pow((poscopy[firstatom][2]-poscopy[secondatom][2]),2);
 				*/
-				double xdistance = pow(firstatoms[0]-secondatoms[0],2);
-				double ydistance = pow(firstatoms[1]-secondatoms[1],2);
-				double zdistance = pow(firstatoms[2]-secondatoms[2],2);
+				double xdistance = pow(firstatom[0]-secondatom[0],2);
+				double ydistance = pow(firstatom[1]-secondatom[1],2);
+				double zdistance = pow(firstatom[2]-secondatom[2],2);
 				double mydistance = sqrt(xdistance+ydistance+zdistance);
 				printf("done measuring! \n");
 				return mydistance;
@@ -147,6 +148,7 @@ void ForceDerivative::end_of_step() {
 				
 			}
 			
+
 			sort(indexOfParticle);
 
 			for (int i = 0; i < nlocal; i++) {
@@ -171,7 +173,7 @@ void ForceDerivative::end_of_step() {
 					distancesofclosestatoms[indexOfParticle][2] = mydistance;
 					ifoundsomething = true;
 				}
-				if (ifoundsomething) {
+				if (ifoundsomething) {				
 					sort(indexOfParticle);
 				}
 			}
