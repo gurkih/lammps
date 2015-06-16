@@ -45,17 +45,24 @@ int ForceDerivative::setmask() {
 void ForceDerivative::sort(int myindex) {
 	//this doesnt work as sort is unable to access indicesofblah
 	printf("sorting ... \n");
+	double blah = indicesofclosestatoms[0][0];
+//	double blab = distancesofclosestatoms[0][0];
+	printf("i did blah, myindex is %d %f \n", myindex, blah);
 	if (distancesofclosestatoms [myindex][2] < distancesofclosestatoms[myindex][0]) {
 
+		printf("1 \n");
 		int itmp = indicesofclosestatoms[myindex][2];
 		double dtmp = distancesofclosestatoms[myindex][2];
 
+		printf("2 \n");
 		indicesofclosestatoms[myindex][2] = indicesofclosestatoms[myindex][1];
 		distancesofclosestatoms[myindex][2]= distancesofclosestatoms[myindex][1];
 		
+		printf("3 \n");
 		indicesofclosestatoms[myindex][1] = indicesofclosestatoms[myindex][0];
 		distancesofclosestatoms[myindex][1]=  distancesofclosestatoms[myindex][0];
 
+		printf("4 \n");
 		indicesofclosestatoms[myindex][0] = itmp;
 		distancesofclosestatoms[myindex][0]= dtmp;
 	}
@@ -79,7 +86,7 @@ double ForceDerivative::euclideandistance(double* firstatom, double* secondatom)
 				printf("measuring ... \n");
 				if (firstatom[0] == secondatom[0] && firstatom[1] == secondatom[1] && firstatom[2] == secondatom[2]) {
 					printf("done measuring! \n");
-					return DBL_MAX; //return inf if we got handed over the same atom twice
+						return DBL_MAX; //return inf if we got handed over the same atom twice
 				}
 				//printf("%f", tmp[0]);
 				/*
@@ -95,13 +102,24 @@ double ForceDerivative::euclideandistance(double* firstatom, double* secondatom)
 				return mydistance;
 }
 
+
+
+
+
 void ForceDerivative::end_of_step() {
+
+
+	//indicesofclosestatoms = new double[9999][3]; // just looking for the three closest atoms right now. this might change.
+	//distancesofclosestatoms = new double[9999][3];
+
+	double indicesofclosestatoms [9999][3];
+	double distancesofclostesatoms [9999][3];
+
 	int nlocal = atom->nlocal;
 	double deriforceoutput[nlocal][3];
 	double forceoutput[nlocal][3];
 	double speedoutput[nlocal][3];
-	int indicesofclosestatoms [nlocal][3]; // just looking for the three closest atoms right now. this might change.
-	double distancesofclosestatoms [nlocal][3];
+
 	float averagedenominator[3] = {0,0,0};
 
 	float averagederif[3] = {0,0,0};
@@ -125,6 +143,7 @@ void ForceDerivative::end_of_step() {
 //	printf("i managed to copy!\n");
 //	printf("my bond type is: %d \n",atom->bond_type[2][2]);
 
+	indicesofclosestatoms[indexOfParticle][0];
 		if (atom->mask[indexOfParticle] & groupbit) {
 		//	printf("Hello World");
 			
@@ -141,13 +160,14 @@ void ForceDerivative::end_of_step() {
 				double second [3];
 				for (int x = 0; x < 3; x++) {
 					first[x] = poscopy[indexOfParticle][x];
-					second[x] = poscopy[indicesofclosestatoms[indexOfParticle][i]][x];
+					int foo = indicesofclosestatoms[indexOfParticle][i];
+					second[x] = poscopy[foo][x];
 				}
 				//distancesofclosestatoms[indexOfParticle][i] = euclideandistance(indexOfParticle,indicesofclosestatoms [indexOfParticle][i]);i
 				distancesofclosestatoms[indexOfParticle][i] = euclideandistance(first, second);
 				
 			}
-			
+			printf("my distance is %f \n", distancesofclosestatoms[indexOfParticle][0]);
 
 			sort(indexOfParticle);
 
