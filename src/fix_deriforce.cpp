@@ -104,17 +104,22 @@ double ForceDerivative::euclideandistance(double* firstatom, double* secondatom)
 
 
 
-
+double **indicesofclosestatoms;
+double **distancesofclostesatoms;
 
 void ForceDerivative::end_of_step() {
 
 
 	//indicesofclosestatoms = new double[9999][3]; // just looking for the three closest atoms right now. this might change.
 	//distancesofclosestatoms = new double[9999][3];
+	
 
-	double indicesofclosestatoms [9999][3];
-	double distancesofclostesatoms [9999][3];
-
+//	extern double** indicesofclosestatoms;
+//	extern double** distancesofclostesatoms;
+	indicesofclosestatoms = new double[9999][3];
+	distancesofclosestatoms = new double[9999][3];
+	indicesofclosestatoms[0][0] = 0;
+	printf("i just did stuff\n");
 	int nlocal = atom->nlocal;
 	double deriforceoutput[nlocal][3];
 	double forceoutput[nlocal][3];
