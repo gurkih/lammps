@@ -116,8 +116,8 @@ void ForceDerivative::end_of_step() {
 
 //	extern double** indicesofclosestatoms;
 //	extern double** distancesofclostesatoms;
-	indicesofclosestatoms = new double[9999][3];
-	distancesofclosestatoms = new double[9999][3];
+	indicesofclosestatoms = new double*[3];
+	distancesofclosestatoms = new double*[3]; 
 	indicesofclosestatoms[0][0] = 0;
 	printf("i just did stuff\n");
 	int nlocal = atom->nlocal;
