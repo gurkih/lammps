@@ -110,6 +110,7 @@ double **distancesofclostesatoms;
 void ForceDerivative::end_of_step() {
 
 
+	int nlocal = atom->nlocal;
 	//indicesofclosestatoms = new double[9999][3]; // just looking for the three closest atoms right now. this might change.
 	//distancesofclosestatoms = new double[9999][3];
 	
@@ -117,10 +118,15 @@ void ForceDerivative::end_of_step() {
 //	extern double** indicesofclosestatoms;
 //	extern double** distancesofclostesatoms;
 	indicesofclosestatoms = new double*[3];
-	distancesofclosestatoms = new double*[3]; 
-	indicesofclosestatoms[0][0] = 0;
+	distancesofclosestatoms = new double*[3];
+	double foo[3] = {0,0,0};
+	for (int i = 0; i < nlocal; i++) {
+		indicesofclosestatoms[i] = foo;
+		distancesofclosestatoms[i] = foo;
+	}
+//	indicesofclosestatoms[0][0] = 42;
 	printf("i just did stuff\n");
-	int nlocal = atom->nlocal;
+
 	double deriforceoutput[nlocal][3];
 	double forceoutput[nlocal][3];
 	double speedoutput[nlocal][3];
