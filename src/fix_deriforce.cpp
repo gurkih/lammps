@@ -34,6 +34,8 @@ ForceDerivative::ForceDerivative(LAMMPS *lmp, int narg, char **arg)
 ForceDerivative::~ForceDerivative() {
 	memory->destroy(lastf);
 	atom->delete_callback(id,0);
+	memory->destroy(indicesofclosestatoms);
+	memory->destroy(distancesofclosestatoms);
 }
 
 int ForceDerivative::setmask() {
@@ -46,7 +48,7 @@ void ForceDerivative::sort(int myindex) {
 	//this doesnt work as sort is unable to access indicesofblah
 //	printf("sorting ... \n");
 //	double blab = distancesofclosestatoms[0][0];
-	printf("i did blah, myindex is %d \n", myindex);
+//	printf("i did blah, myindex is %d \n", myindex);
 	if (distancesofclosestatoms [myindex][2] < distancesofclosestatoms[myindex][0]) {
 
 		int itmp = indicesofclosestatoms[myindex][2];
@@ -130,8 +132,12 @@ void ForceDerivative::end_of_step() {
 	double **speedcopy = atom->v;
 	int** specialcopy = atom->bond_type;
 	bool ifoundsomething = false;
-	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {
+
+	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) { //this -1 is a temporal fix. not suitable for final version.
 //	printf("my bond type is: %d \n",atom->bond_type[2][2]);
+
+	printf("currentatom is %i \n", indexOfParticle);
+
 		if (atom->mask[indexOfParticle] & groupbit) {
 		for (int i = 0; i < 3; i++) {
 			indicesofclosestatoms [indexOfParticle][i] = i;
