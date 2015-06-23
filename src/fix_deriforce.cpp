@@ -34,8 +34,8 @@ ForceDerivative::ForceDerivative(LAMMPS *lmp, int narg, char **arg)
 ForceDerivative::~ForceDerivative() {
 	memory->destroy(lastf);
 	atom->delete_callback(id,0);
-	memory->destroy(indicesofclosestatoms);
-	memory->destroy(distancesofclosestatoms);
+	//memory->destroy(indicesofclosestatoms);
+	//memory->destroy(distancesofclosestatoms);
 }
 
 int ForceDerivative::setmask() {
@@ -133,7 +133,7 @@ void ForceDerivative::end_of_step() {
 	int** specialcopy = atom->bond_type;
 	bool ifoundsomething = false;
 
-	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) { //this -1 is a temporal fix. not suitable for final version.
+	for (int indexOfParticle = 0; indexOfParticle < nlocal; indexOfParticle++) { //was: ++indexOfParticle++
 //	printf("my bond type is: %d \n",atom->bond_type[2][2]);
 
 	printf("currentatom is %i \n", indexOfParticle);
