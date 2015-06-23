@@ -65,9 +65,15 @@ double ForceDerivative::euclideandistance(double* firstatom, double* secondatom)
 }
 
 void ForceDerivative::end_of_step() {
-	bool debug = false;
+	const double boltzmann_constant = 1.3806503e-23;
+	bool debug = true;
 	int nlocal = atom->nlocal;
 	double deriforce[nlocal][3];
+	for (int i = 0; i < nlocal; i++) {
+		for (int x = 0; x < 3; x++) {
+			deriforce[i][x] = 0;
+		}
+	}
 //	double forceoutput[nlocal][3];
 //	double speedoutput[nlocal][3];
 //	float averagedenominator[3] = {0,0,0};
@@ -87,7 +93,7 @@ void ForceDerivative::end_of_step() {
 //	int** specialcopy = atom->bond_type;
 //	bool ifoundsomething = false;
 	if (debug) {
-		printf("force on atom is: \n");
+		printf("<--------- new timestep ---------> \n");
 	}
 	for (int indexOfParticle = 0; indexOfParticle < nlocal; indexOfParticle++) { //was: ++indexOfParticle++
 //	printf("my bond type is: %d \n",atom->bond_type[2][2]);
@@ -96,7 +102,7 @@ void ForceDerivative::end_of_step() {
 
 	if (atom->mask[indexOfParticle] & groupbit) {
 			if (debug) {
-				printf("x: %f, y: %f, z: %f \n", forcecopy[indexOfParticle][0], forcecopy[indexOfParticle][1], forcecopy[indexOfParticle][2]);
+				printf("forcex: %f, forcey: %f, forcez: %f \n", forcecopy[indexOfParticle][0], forcecopy[indexOfParticle][1], forcecopy[indexOfParticle][2]);
 			}
 			if (nlocal - indexOfParticle >= 3) {
 				
@@ -124,12 +130,20 @@ void ForceDerivative::end_of_step() {
 //					printf("\n");
 					for (int i = 0; i < 3; i++) {
 						double myweighting = distances[i]/sumofdistances;
-//						printf("my weighting is %f, the added derif is %f ", myweighting, forcederi[i][x]);
+						if (debug) {
+							printf("my weighting is %f, the added derif is %f ", myweighting, forcederi[i][x]);
+						}
 						deriforce[indexOfParticle][x] +=  myweighting * forcederi[i][x];
+					}
+					if (debug) {
+						printf("\n");
 					}
 				}
 				if (debug) {
 						printf("distances: %f %f %f \n", distances[0], distances[1], distances[2]);
+						for (int debug = 0; debug < 3; debug++) {
+							printf("	pos0 = %f, pos1 = %f \n", poscopy[indexOfParticle][debug], poscopy[indexOfParticle+1][debug]);
+						}
 						printf("derif: ");
 						for (int i = 0; i < 3; i++) {
 							printf(" %f",deriforce[indexOfParticle][i]);
@@ -141,21 +155,28 @@ void ForceDerivative::end_of_step() {
 	}
 
 	// the following will calculate the configurational temperature
-	double sumofallforces;
-	double sumofallderiforces;
+	double sumofallforces=0;
+	double sumofallderiforces=0;
 	for (int indexOfParticle = 0; indexOfParticle < nlocal; indexOfParticle++) {
 		if (atom->mask[indexOfParticle] & groupbit) {
 			if (nlocal-indexOfParticle >=3) {
 				for (int x = 0; x < 3; x++) {
-					sumofallforces += pow(forcecopy[indexOfParticle][x], 2)/(nlocal-2);
-					sumofallderiforces += deriforce[indexOfParticle][x]/(nlocal-2);
+					sumofallforces += pow(forcecopy[indexOfParticle][x], 2);
+					sumofallderiforces += -deriforce[indexOfParticle][x];
 				}
 			}
 		}
 	}
-//	sumofallforces/=(nlocal-2);
-//	sumofallderiforces/=(nlocal-2);
+	sumofallforces/=(nlocal-2);
+	sumofallderiforces/=(nlocal-2);
+	if (debug) {
+		printf("sumofallforces = %f, sumofallderiforces = %f \n", sumofallforces, sumofallderiforces);
+	}
 	double temp=sumofallforces/sumofallderiforces;
+	if (debug) {
+		printf("tempwoboltz = %f \n", temp);
+	}
+	temp /= boltzmann_constant;
 	printf("Temp is %f \n", temp);
 //	printf("\n");
 }
