@@ -65,6 +65,7 @@ double ForceDerivative::euclideandistance(double* firstatom, double* secondatom)
 }
 
 void ForceDerivative::end_of_step() {
+	bool debug = false;
 	int nlocal = atom->nlocal;
 	double deriforce[nlocal][3];
 //	double forceoutput[nlocal][3];
@@ -85,14 +86,18 @@ void ForceDerivative::end_of_step() {
 //	double **speedcopy = atom->v;
 //	int** specialcopy = atom->bond_type;
 //	bool ifoundsomething = false;
-	printf("force on atom is: \n");
+	if (debug) {
+		printf("force on atom is: \n");
+	}
 	for (int indexOfParticle = 0; indexOfParticle < nlocal; indexOfParticle++) { //was: ++indexOfParticle++
 //	printf("my bond type is: %d \n",atom->bond_type[2][2]);
 
 //	printf("currentatom is %i \n", indexOfParticle);
 
 		if (atom->mask[indexOfParticle] & groupbit) {
-			printf("x: %f, y: %f, z: %f \n", forcecopy[indexOfParticle][0], forcecopy[indexOfParticle][1], forcecopy[indexOfParticle][2]);
+			if (debug) {
+				printf("x: %f, y: %f, z: %f \n", forcecopy[indexOfParticle][0], forcecopy[indexOfParticle][1], forcecopy[indexOfParticle][2]);
+			}
 			if (nlocal - indexOfParticle >= 3) {
 				double distancederi [3][3];
 				double forcederi [3][3];
@@ -121,12 +126,14 @@ void ForceDerivative::end_of_step() {
 						deriforce[indexOfParticle][x] +=  myweighting * forcederi[i][x];
 					}
 				}
-//			printf("distances: %f %f %f \n", distances[0], distances[1], distances[2]);
-			printf("derif: ");
-			for (int i = 0; i < 3; i++) {
-				printf(" %f",deriforce[indexOfParticle][i]);
-			}
-			printf("\n");
+				if (debug) {
+						printf("distances: %f %f %f \n", distances[0], distances[1], distances[2]);
+						printf("derif: ");
+						for (int i = 0; i < 3; i++) {
+							printf(" %f",deriforce[indexOfParticle][i]);
+						}
+						printf("\n");
+				}
 			}
 		}
 	}
