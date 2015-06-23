@@ -22,11 +22,10 @@ class ForceDerivative : public Fix {
 		void copy_arrays(int, int);
 		void set_arrays(int);
 
-		double **distancesofclosestatoms;
-		double **indicesofclosestatoms;
 	private:
 		double **lastf;
 		double **poscopy;
+		double **forcecopy;
 
 
 
