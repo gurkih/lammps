@@ -108,16 +108,20 @@ void ForceDerivative::end_of_step() {
 					sumofdistances+=distances[i];
 					for (int x = 0; x < 3; x++) { //calculating stuff for direction x_x
 						distancederi[i][x]=poscopy[indexOfParticle][x]-poscopy[indexOfParticle+i+1][x];
-						forcederi[i][x]=forcederi[indexOfParticle][x]-forcederi[indexOfParticle+i+1][x];
+						forcederi[i][x]=forcecopy[indexOfParticle][x]-forcecopy[indexOfParticle+i+1][x];
 					}
 				}
+//				printf("\n");
 				for(int x = 0; x < 3; x++) {
 					deriforce[indexOfParticle][x] = 0;
+//					printf("\n");
 					for (int i = 0; i < 3; i++) {
-						deriforce[indexOfParticle][x] += (distances[i]/sumofdistances) * forcederi[i][x];
+						double myweighting = distances[i]/sumofdistances;
+//						printf("my weighting is %f, the added derif is %f ", myweighting, forcederi[i][x]);
+						deriforce[indexOfParticle][x] +=  myweighting * forcederi[i][x];
 					}
 				}
-			printf("distances: %f %f %f \n", distances[0], distances[1], distances[2]);
+//			printf("distances: %f %f %f \n", distances[0], distances[1], distances[2]);
 			printf("derif: ");
 			for (int i = 0; i < 3; i++) {
 				printf(" %f",deriforce[indexOfParticle][i]);
@@ -126,6 +130,7 @@ void ForceDerivative::end_of_step() {
 			}
 		}
 	}
+
 //	printf("\n");
 }
 double ForceDerivative::memory_usage() {
