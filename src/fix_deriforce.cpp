@@ -94,11 +94,13 @@ void ForceDerivative::end_of_step() {
 
 //	printf("currentatom is %i \n", indexOfParticle);
 
-		if (atom->mask[indexOfParticle] & groupbit) {
+	if (atom->mask[indexOfParticle] & groupbit) {
 			if (debug) {
 				printf("x: %f, y: %f, z: %f \n", forcecopy[indexOfParticle][0], forcecopy[indexOfParticle][1], forcecopy[indexOfParticle][2]);
 			}
 			if (nlocal - indexOfParticle >= 3) {
+				
+				// the following will calculate approximations for f_deri for each atom
 				double distancederi [3][3];
 				double forcederi [3][3];
 				double distances[3];
@@ -138,6 +140,23 @@ void ForceDerivative::end_of_step() {
 		}
 	}
 
+	// the following will calculate the configurational temperature
+	double sumofallforces;
+	double sumofallderiforces;
+	for (int indexOfParticle = 0; indexOfParticle < nlocal; indexOfParticle++) {
+		if (atom->mask[indexOfParticle] & groupbit) {
+			if (nlocal-indexOfParticle >=3) {
+				for (int x = 0; x < 3; x++) {
+					sumofallforces += pow(forcecopy[indexOfParticle][x], 2)/(nlocal-2);
+					sumofallderiforces += deriforce[indexOfParticle][x]/(nlocal-2);
+				}
+			}
+		}
+	}
+//	sumofallforces/=(nlocal-2);
+//	sumofallderiforces/=(nlocal-2);
+	double temp=sumofallforces/sumofallderiforces;
+	printf("Temp is %f \n", temp);
 //	printf("\n");
 }
 double ForceDerivative::memory_usage() {
