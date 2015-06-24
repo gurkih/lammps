@@ -67,7 +67,7 @@ double ForceDerivative::euclideandistance(double* firstatom, double* secondatom)
 void ForceDerivative::end_of_step() {
 	const double boltzmann_constant = 1.3806503e-23;
 	const double angstroem = 1.0e-10;
-	bool debug = false;
+	bool debug = true;
 	int nlocal = atom->nlocal;
 	double deriforce[nlocal][3];
 	for (int i = 0; i < nlocal; i++) {
@@ -92,14 +92,18 @@ void ForceDerivative::end_of_step() {
 */
 
 
-/*
-	for(int i = 0; i < 10; i++) {
-		for (int j = 0; j < 3; j++) {
-			printf("poscopy %d/%d = %f ",i, j, poscopy[i][j]);
+	if (debug) {
+		int showatoms = 10;
+		if (nlocal < 10) {
+			showatoms = nlocal-1;
 		}
-		printf("\n");
+		for(int i = 0; i < showatoms; i++) {
+			for (int j = 0; j < 3; j++) {
+				printf("poscopy %d/%d = %f ",i, j, poscopy[i][j]);
+			}
+			printf("\n");
+		}
 	}
-*/
 //	double **forcecopy = atom->f;
 //	double **speedcopy = atom->v;
 //	int** specialcopy = atom->bond_type;
