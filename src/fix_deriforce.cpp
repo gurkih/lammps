@@ -66,7 +66,8 @@ double ForceDerivative::euclideandistance(double* firstatom, double* secondatom)
 
 void ForceDerivative::end_of_step() {
 	const double boltzmann_constant = 1.3806503e-23;
-	bool debug = true;
+	const double angstroem = 1.0e-10;
+	bool debug = false;
 	int nlocal = atom->nlocal;
 	double deriforce[nlocal][3];
 	for (int i = 0; i < nlocal; i++) {
@@ -80,6 +81,17 @@ void ForceDerivative::end_of_step() {
 //	float averagederif[3] = {0,0,0};
 	double **poscopy = atom->x;
 	double **forcecopy = atom->f;
+	
+/* this simple fix does not work as it runs into machine accuracy problems
+	for (int i  = 0; i < nlocal; i++) {
+		for (int x = 0; x < 3; x++) {
+			poscopy[i][x] *= angstroem;
+			forcecopy[i][x] *= angstroem;
+		}
+	}
+*/
+
+
 /*
 	for(int i = 0; i < 10; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -154,7 +166,7 @@ void ForceDerivative::end_of_step() {
 		}
 	}
 
-	// the following will calculate the configurational temperature
+	// the following will calculate the configurational temperature. or not. as i failed. somewhere. :-(
 	double sumofallforces=0;
 	double sumofallderiforces=0;
 	for (int indexOfParticle = 0; indexOfParticle < nlocal; indexOfParticle++) {
