@@ -21,6 +21,8 @@ class ForceDerivative : public Fix {
 		void set_arrays(int);
 	private:
 		double **lastf;
+		bigint mytimestep;
+		bool beenhere;
 };
 
 }

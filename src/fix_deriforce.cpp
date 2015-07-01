@@ -46,30 +46,39 @@ void ForceDerivative::end_of_step() {
 	double deriforceoutput[nlocal][3];
 	double forceoutput[nlocal][3];
 	double speedoutput[nlocal][3];
-
+	if(update->ntimestep == 1) {
+//		this->mytimestep = 0;
+	}
 	float averagedenominator[3] = {0,0,0};
 
+	printf("timestep is %lu, my timestep is %lu \n",update->ntimestep, this->mytimestep);
 	float averagederif[3] = {0,0,0};
-	printf("i am being run!");
+//	printf("i am being run!");
 
 
 	//here: calculate the DeriForce for each atom. Note that this will just calculate the DeriForce for the atoms this thread owns (like stated in atom->mask)
 
-	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {	
-
-		double **forcecopy = atom->f;
-		double **speedcopy = atom->v;
-			if (atom->mask[indexOfParticle] & groupbit) {
-			}
-		double **forcecopy = atom->f;
-		for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) 
-		{
+	double **forcecopy = atom->f;
+	double **speedcopy = atom->v;
+	if(this->mytimestep !=update->ntimestep) {
+	printf("pluh \n");
+		for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {
 			for (int i = 0; i < 3; i++) {
 				this->lastf[indexOfParticle][i] = forcecopy[indexOfParticle] [i];
 			}
 		}
+	this->mytimestep=update->ntimestep+1;
+	} else {
+		printf("plah \n");
+//		this->mytimestep++;
+		this->mytimestep = update->ntimestep+1;
 	}
-}
+	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {	
+		if (atom->mask[indexOfParticle] & groupbit) {
+	
+		}
+	}
+}	
 
 double ForceDerivative::memory_usage() {
 	int nmax = atom->nmax;
