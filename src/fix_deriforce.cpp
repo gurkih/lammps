@@ -66,7 +66,8 @@ double ForceDerivative::euclideandistance(double* firstatom, double* secondatom)
 
 void ForceDerivative::end_of_step() {
 	const double boltzmann_constant = 1.3806503e-23;
-	const double angstroem = 1.0e-10;
+	const double angstroem = 100000000000;
+	const long double longangstroem = (long double)1/(long double)angstroem;
 	bool debug = true;
 	int nlocal = atom->nlocal;
 	double deriforce[nlocal][3];
@@ -93,6 +94,7 @@ void ForceDerivative::end_of_step() {
 
 
 	if (debug) {
+		printf("angstroem is %f, 1/angstroem is %Lf\n", angstroem, longangstroem);
 		int showatoms = 10;
 		if (nlocal < 10) {
 			showatoms = nlocal-1;
@@ -171,22 +173,22 @@ void ForceDerivative::end_of_step() {
 	}
 
 	// the following will calculate the configurational temperature. or not. as i failed. somewhere. :-(
-	double sumofallforces=0;
-	double sumofallderiforces=0;
+	long double sumofallforces=0;
+	long double sumofallderiforces=0;
 	for (int indexOfParticle = 0; indexOfParticle < nlocal; indexOfParticle++) {
 		if (atom->mask[indexOfParticle] & groupbit) {
 			if (nlocal-indexOfParticle >=3) {
 				for (int x = 0; x < 3; x++) {
-					sumofallforces += pow(forcecopy[indexOfParticle][x], 2);
-					sumofallderiforces += -deriforce[indexOfParticle][x];
+					sumofallforces += pow((1/angstroem)*(long double)forcecopy[indexOfParticle][x], 2);
+					sumofallderiforces += (long double)-deriforce[indexOfParticle][x];
 				}
 			}
 		}
 	}
-	sumofallforces/=(nlocal-2);
+	sumofallforces/=(nlocal-2)*angstroem;
 	sumofallderiforces/=(nlocal-2);
 	if (debug) {
-		printf("sumofallforces = %f, sumofallderiforces = %f \n", sumofallforces, sumofallderiforces);
+		printf("sumofallforces = %Lf, sumofallderiforces = %Lf \n", sumofallforces, sumofallderiforces);
 	}
 	double temp=sumofallforces/sumofallderiforces;
 	if (debug) {

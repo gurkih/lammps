@@ -14,6 +14,9 @@ min_style	     cg
 min_modify	     dmax ${dmax} line quadratic
 
 # Setup output
-thermo		1
+timestep 0.001
+thermo		100
 thermo_style custom step temp pe press pxx pyy pzz pxy pxz pyz lx ly lz vol
 thermo_modify norm no
+
+dump 1 all xyz 1 mydump.xyz
