@@ -20,6 +20,8 @@
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
+bool ForceDerivative::beenhere = false;
+
 ForceDerivative::ForceDerivative(LAMMPS *lmp, int narg, char **arg) 
 : Fix(lmp, narg, arg) {
   if (narg < 4) error->all(FLERR,"Illegal fix print command");
@@ -55,27 +57,25 @@ void ForceDerivative::end_of_step() {
 	float averagederif[3] = {0,0,0};
 //	printf("i am being run!");
 
-
-	//here: calculate the DeriForce for each atom. Note that this will just calculate the DeriForce for the atoms this thread owns (like stated in atom->mask)
-
 	double **forcecopy = atom->f;
 	double **speedcopy = atom->v;
-	if(this->mytimestep !=update->ntimestep) {
+	if(beenhere == false) {
 	printf("pluh \n");
 		for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {
 			for (int i = 0; i < 3; i++) {
 				this->lastf[indexOfParticle][i] = forcecopy[indexOfParticle] [i];
 			}
 		}
-	this->mytimestep=update->ntimestep+1;
+	beenhere = true;
 	} else {
 		printf("plah \n");
+		beenhere = false;
 //		this->mytimestep++;
-		this->mytimestep = update->ntimestep+1;
-	}
-	for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {	
-		if (atom->mask[indexOfParticle] & groupbit) {
-	
+		int temp = 0;
+		for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {	
+			if (atom->mask[indexOfParticle] & groupbit) {
+				
+			}
 		}
 	}
 }	

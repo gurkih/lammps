@@ -22,7 +22,7 @@ class ForceDerivative : public Fix {
 	private:
 		double **lastf;
 		bigint mytimestep;
-		bool beenhere;
+		static bool beenhere;
 };
 
 }
