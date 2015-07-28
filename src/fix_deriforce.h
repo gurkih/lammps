@@ -20,7 +20,7 @@ class ForceDerivative : public Fix {
 		void copy_arrays(int, int);
 		void set_arrays(int);
 	private:
-		double **lastf;
+		static double **lastf;
 		bigint mytimestep;
 		static bool beenhere;
 };

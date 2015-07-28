@@ -21,15 +21,27 @@ using namespace LAMMPS_NS;
 using namespace FixConst;
 
 bool ForceDerivative::beenhere = false;
+double ** ForceDerivative::lastf;
+//double** ForceDerivative::lastf;
 
 ForceDerivative::ForceDerivative(LAMMPS *lmp, int narg, char **arg) 
 : Fix(lmp, narg, arg) {
+	int nlocal = atom->nlocal;
+	//if(update->ntimestep == 1) {
+		lastf = new double*[atom->nlocal];
+		for (int i = 0; i < nlocal; i++) {
+			lastf[i] = new double[3];
+		}
+		printf("i just initialized lastf \n");
+	//}
+
   if (narg < 4) error->all(FLERR,"Illegal fix print command");
 
   nevery = atoi(arg[3]);
   if (nevery <= 0) error->all(FLERR,"Illegal fix print command");
 	memory->create(this->lastf, atom->nmax, 3, "ForceDerivative:lastf");
 	atom->add_callback(0);
+
 }
 
 ForceDerivative::~ForceDerivative() {
@@ -48,35 +60,54 @@ void ForceDerivative::end_of_step() {
 	double deriforceoutput[nlocal][3];
 	double forceoutput[nlocal][3];
 	double speedoutput[nlocal][3];
-	if(update->ntimestep == 1) {
-//		this->mytimestep = 0;
-	}
+
 	float averagedenominator[3] = {0,0,0};
 
-	printf("timestep is %lu, my timestep is %lu \n",update->ntimestep, this->mytimestep);
+//	printf("timestep is %lu, my timestep is %lu \n",update->ntimestep, this->mytimestep);
 	float averagederif[3] = {0,0,0};
 //	printf("i am being run!");
 
 	double **forcecopy = atom->f;
 	double **speedcopy = atom->v;
-	if(beenhere == false) {
-	printf("pluh \n");
+	if(beenhere == true) { //act, this should be false. im trying stuff.
+		printf("i am writing lastfs \n");
+
+		printf("false. my value is %d \n ",lastf[nlocal-2][0]);
 		for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {
 			for (int i = 0; i < 3; i++) {
-				this->lastf[indexOfParticle][i] = forcecopy[indexOfParticle] [i];
+				lastf[indexOfParticle][i] = forcecopy[indexOfParticle][i];
 			}
 		}
-	beenhere = true;
+		printf("i just wrote the value %f \n", lastf[nlocal-2][0]);
+		beenhere = false; //this should be true
 	} else {
-		printf("plah \n");
-		beenhere = false;
+//		printf("plah \n");
+		beenhere = true; //this should be false
+		printf("true. my value is %d \n ",lastf[nlocal-2][0]);
 //		this->mytimestep++;
-		int temp = 0;
+		int tmp = 0;
+		double add;
+		double average = 0;
 		for (int indexOfParticle = 0; indexOfParticle < nlocal; ++indexOfParticle) {	
 			if (atom->mask[indexOfParticle] & groupbit) {
-				
+				if (lastf[indexOfParticle][2] == 0)
+					tmp++;
+				}
+				for (int i = 0; i < 3; i++) {
+//					printf("lastf = %f, actualf = %f \n", lastf[indexOfParticle][i],forcecopy[indexOfParticle][i]);
+					add =this->lastf[indexOfParticle][i] - forcecopy[indexOfParticle][i];
+					add /=nlocal;
+					add /=1.01;
+				}
+				average+=add;
+			}
+		printf("the number of 0 forces is %d, the derivation is %f. \n",tmp, average);
+		for (int i = 0 ; i < nlocal; ++i) {
+			for (int x = 0; x < 3; x++) {
+				printf(". %f, %f, %f last %f, %f, %f \n", forcecopy[i][0],forcecopy[i][1],forcecopy[i][2],lastf[i][0],lastf[i][1],lastf[i][2]);
 			}
 		}
+		
 	}
 }	
 
@@ -106,3 +137,4 @@ void ForceDerivative::set_arrays(int i) {
 		memset(this->lastf[i], 0, sizeof(double) * 3);
 	}
 }
+
