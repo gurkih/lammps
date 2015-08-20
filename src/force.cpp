@@ -106,6 +106,13 @@ Force::~Force()
   if (improper) delete improper;
   if (kspace) delete kspace;
 
+  pair = NULL;
+  bond = NULL;
+  angle = NULL;
+  dihedral = NULL;
+  improper = NULL;
+  kspace = NULL;
+
   delete pair_map;
 }
 
@@ -905,7 +912,7 @@ FILE *Force::open_potential(const char *name)
 
   fp = fopen(name,"r");
   if (fp) {
-    potential_date(fp,name);
+    if (comm->me == 0) potential_date(fp,name);
     rewind(fp);
     return fp;
   }
@@ -934,7 +941,7 @@ FILE *Force::open_potential(const char *name)
 
   fp = fopen(newpath,"r");
   if (fp) {
-    potential_date(fp,name);
+    if (comm->me == 0) potential_date(fp,name);
     rewind(fp);
   }
 
