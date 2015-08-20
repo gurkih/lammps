@@ -45,7 +45,7 @@ ForceDerivative::ForceDerivative(LAMMPS *lmp, int narg, char **arg)
 }
 
 ForceDerivative::~ForceDerivative() {
-//	memory->destroy(lastf);
+//	memory->destroy(lastf); dont have to do this manually anymore
 	atom->delete_callback(id,0);
 }
 
@@ -98,13 +98,14 @@ void ForceDerivative::end_of_step() {
 					add =this->lastf[indexOfParticle][i] - forcecopy[indexOfParticle][i];
 					add /=nlocal;
 					add /=1.01;
+					//printf("add + %f \n",add);
 				}
 				average+=add;
 			}
 		double deri = lastf[1][0]-forcecopy[1][0];
-		printf("the number of 0 forces is %d, the derivation is %f. \n",tmp, average);
+//		printf("the number of 0 forces is %d, the derivation is %f. \n",tmp, average);
 		for (int i = 0 ; i < nlocal; ++i) {
-			//printf("%f, %f, %f last %f, %f, %f \n", forcecopy[i][0],forcecopy[i][1],forcecopy[i][2],lastf[i][0],lastf[i][1],lastf[i][2]);
+			printf("%f, %f, %f last %f, %f, %f \n", forcecopy[i][0],forcecopy[i][1],forcecopy[i][2],lastf[i][0],lastf[i][1],lastf[i][2]);
 		}
 		printf("deri is %f \n",deri);
 		
